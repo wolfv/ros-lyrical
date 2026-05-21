@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-rviz-visual-testing-framework
+  version: 15.2.3
+source:
+  git: https://github.com/ros2-gbp/rviz-release.git
+  tag: release/lyrical/rviz_visual_testing_framework/15.2.3-1
+  target_directory: ros-lyrical-rviz-visual-testing-framework/src/work
+
+build:
+  script: ${{ '$RECIPE_DIR/build_ament_cmake.sh' if unix or wasm32 else '%RECIPE_DIR%\\bld_ament_cmake.bat' }}
+  number: 20
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  homepage: http://ros.org/wiki/rviz2
+  repository: https://github.com/ros-visualization/rviz
+  license: BSD-3-Clause
+  summary: 3D testing framework for RViz.
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - if: target_platform!='emscripten-wasm32'
+      then:
+        - ${{ stdlib('c') }}
+    - ninja
+    - python
+    - setuptools
+    - git
+    - git-lfs
+    - if: unix
+      then:
+        - patch
+        - make
+        - coreutils
+    - if: win
+      then:
+        - m2-patch
+    - if: osx
+      then:
+        - tapi
+    - if: build_platform != target_platform
+      then:
+        - pkg-config
+    - cmake
+    - cython
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+  host:
+    - ${{ 'libgl-devel' if linux }}
+    - ${{ 'libopengl-devel' if linux }}
+    - if: build_platform == target_platform
+      then:
+        - pkg-config
+    - numpy
+    - pip
+    - python
+    - qt6-main
+    - ros-lyrical-ament-cmake
+    - ros-lyrical-ament-cmake-gmock
+    - ros-lyrical-ament-cmake-gtest
+    - ros-lyrical-ament-lint-auto
+    - ros-lyrical-ament-lint-common
+    - ros-lyrical-geometry-msgs
+    - ros-lyrical-rclcpp
+    - ros-lyrical-rcutils
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-rviz-common
+    - ros-lyrical-rviz-ogre-vendor
+    - ros-lyrical-rviz-rendering
+    - ros-lyrical-std-msgs
+    - ros-lyrical-tf2
+    - ros-lyrical-tf2-ros
+    - ros2-distro-mutex 0.16.* lyrical_*
+  run:
+    - python
+    - ros-lyrical-ament-cmake-gtest
+    - ros-lyrical-geometry-msgs
+    - ros-lyrical-rclcpp
+    - ros-lyrical-rcutils
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-rviz-common
+    - ros-lyrical-rviz-ogre-vendor
+    - ros-lyrical-rviz-rendering
+    - ros-lyrical-std-msgs
+    - ros-lyrical-tf2
+    - ros-lyrical-tf2-ros
+    - ros2-distro-mutex 0.16.* lyrical_*

@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-urdfdom
+  version: 5.1.0
+
+build:
+  number: 20
+  script: ''
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  license: BSD-3-Clause
+  summary: A library to access URDFs using the DOM model.
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build: []
+  host:
+    - console_bridge
+    - python
+    - ros-lyrical-console-bridge-vendor
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-urdfdom-headers
+    - ros2-distro-mutex 0.16.* lyrical_*
+    - tinyxml2
+  run:
+    - console_bridge
+    - python
+    - ros-lyrical-console-bridge-vendor
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-urdfdom-headers
+    - ros2-distro-mutex 0.16.* lyrical_*
+    - tinyxml2
+    - urdfdom >=5.1.0, <5.2.0a0
