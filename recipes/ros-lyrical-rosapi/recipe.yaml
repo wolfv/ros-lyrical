@@ -1,0 +1,102 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-rosapi
+  version: 4.1.0
+source:
+  git: https://github.com/ros2-gbp/rosbridge_suite-release.git
+  tag: release/lyrical/rosapi/4.1.0-3
+  target_directory: ros-lyrical-rosapi/src/work
+
+build:
+  script: ${{ '$RECIPE_DIR/build_ament_cmake.sh' if unix or wasm32 else '%RECIPE_DIR%\\bld_ament_cmake.bat' }}
+  number: 20
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  homepage: http://ros.org/wiki/rosapi
+  repository: https://github.com/RobotWebTools/rosbridge_suite
+  license: BSD-3-Clause
+  summary: Provides services for getting various ROS meta-information, including ROS topic, services, interfaces or action servers and managing ROS parameters.
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - if: target_platform!='emscripten-wasm32'
+      then:
+        - ${{ stdlib('c') }}
+    - ninja
+    - python
+    - setuptools
+    - git
+    - git-lfs
+    - if: unix
+      then:
+        - patch
+        - make
+        - coreutils
+    - if: win
+      then:
+        - m2-patch
+    - if: osx
+      then:
+        - tapi
+    - if: build_platform != target_platform
+      then:
+        - pkg-config
+    - cmake
+    - cython
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+  host:
+    - if: build_platform == target_platform
+      then:
+        - pkg-config
+    - numpy
+    - pip
+    - python
+    - ros-lyrical-ament-cmake
+    - ros-lyrical-ament-cmake-mypy
+    - ros-lyrical-ament-cmake-pytest
+    - ros-lyrical-ament-cmake-python
+    - ros-lyrical-geometry-msgs
+    - ros-lyrical-rmw-dds-common
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-sensor-msgs
+    - ros-lyrical-shape-msgs
+    - ros2-distro-mutex 0.16.* lyrical_*
+  run:
+    - python
+    - ros-lyrical-builtin-interfaces
+    - ros-lyrical-rcl-interfaces
+    - ros-lyrical-rclpy
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-ros2action
+    - ros-lyrical-ros2interface
+    - ros-lyrical-ros2node
+    - ros-lyrical-ros2service
+    - ros-lyrical-ros2topic
+    - ros-lyrical-rosapi-msgs
+    - ros-lyrical-rosbridge-library
+    - ros-lyrical-rosidl-adapter
+    - ros-lyrical-rosidl-runtime-py
+    - ros2-distro-mutex 0.16.* lyrical_*

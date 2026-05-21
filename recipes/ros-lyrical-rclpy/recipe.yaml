@@ -1,0 +1,135 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-rclpy
+  version: 10.0.10
+source:
+  git: https://github.com/ros2-gbp/rclpy-release.git
+  tag: release/lyrical/rclpy/10.0.10-1
+  target_directory: ros-lyrical-rclpy/src/work
+
+build:
+  script: ${{ '$RECIPE_DIR/build_ament_cmake.sh' if unix or wasm32 else '%RECIPE_DIR%\\bld_ament_cmake.bat' }}
+  number: 20
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  license: Apache-2.0
+  summary: Package containing the Python client.
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - if: target_platform!='emscripten-wasm32'
+      then:
+        - ${{ stdlib('c') }}
+    - ninja
+    - python
+    - setuptools
+    - git
+    - git-lfs
+    - if: unix
+      then:
+        - patch
+        - make
+        - coreutils
+    - if: win
+      then:
+        - m2-patch
+    - if: osx
+      then:
+        - tapi
+    - if: build_platform != target_platform
+      then:
+        - pkg-config
+    - cmake
+    - cython
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+    - if: build_platform != target_platform
+      then:
+        - pybind11
+  host:
+    - if: build_platform == target_platform
+      then:
+        - pkg-config
+    - numpy
+    - pip
+    - pybind11
+    - pytest
+    - python
+    - ros-lyrical-ament-cmake
+    - ros-lyrical-ament-cmake-gtest
+    - ros-lyrical-ament-cmake-pytest
+    - ros-lyrical-ament-lint-auto
+    - ros-lyrical-ament-lint-common
+    - ros-lyrical-lifecycle-msgs
+    - ros-lyrical-rcl
+    - ros-lyrical-rcl-action
+    - ros-lyrical-rcl-interfaces
+    - ros-lyrical-rcl-lifecycle
+    - ros-lyrical-rcl-logging-interface
+    - ros-lyrical-rcl-yaml-param-parser
+    - ros-lyrical-rcpputils
+    - ros-lyrical-rcutils
+    - ros-lyrical-rmw
+    - ros-lyrical-rmw-implementation
+    - ros-lyrical-rmw-implementation-cmake
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-rosidl-generator-py
+    - ros-lyrical-rosidl-runtime-c
+    - ros-lyrical-test-msgs
+    - ros-lyrical-type-description-interfaces
+    - ros2-distro-mutex 0.16.* lyrical_*
+    - typing_extensions
+  run:
+    - python
+    - pyyaml
+    - ros-lyrical-action-msgs
+    - ros-lyrical-ament-index-python
+    - ros-lyrical-builtin-interfaces
+    - ros-lyrical-lifecycle-msgs
+    - ros-lyrical-rcl
+    - ros-lyrical-rcl-action
+    - ros-lyrical-rcl-interfaces
+    - ros-lyrical-rcl-lifecycle
+    - ros-lyrical-rcl-logging-interface
+    - ros-lyrical-rcl-yaml-param-parser
+    - ros-lyrical-rcpputils
+    - ros-lyrical-rcutils
+    - ros-lyrical-rmw
+    - ros-lyrical-rmw-implementation
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-rosgraph-msgs
+    - ros-lyrical-rosidl-pycommon
+    - ros-lyrical-rosidl-runtime-c
+    - ros-lyrical-rpyutils
+    - ros-lyrical-service-msgs
+    - ros-lyrical-type-description-interfaces
+    - ros-lyrical-unique-identifier-msgs
+    - ros2-distro-mutex 0.16.* lyrical_*
+    - typing_extensions
+tests:
+  - python:
+      imports:
+        - rclpy
+      pip_check: false
