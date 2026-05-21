@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-rcl-logging-implementation
+  version: 3.4.1
+source:
+  git: https://github.com/ros2-gbp/rcl_logging-release.git
+  tag: release/lyrical/rcl_logging_implementation/3.4.1-3
+  target_directory: ros-lyrical-rcl-logging-implementation/src/work
+
+build:
+  script: ${{ '$RECIPE_DIR/build_ament_cmake.sh' if unix or wasm32 else '%RECIPE_DIR%\\bld_ament_cmake.bat' }}
+  number: 20
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  license: Apache-2.0
+  summary: Provides the ability to load logging implementations at runtime. This package acts as an abstraction layer between rcl and the actual logging implementation (e.g., spdlog, noop, or custom implementations).
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - if: target_platform!='emscripten-wasm32'
+      then:
+        - ${{ stdlib('c') }}
+    - ninja
+    - python
+    - setuptools
+    - git
+    - git-lfs
+    - if: unix
+      then:
+        - patch
+        - make
+        - coreutils
+    - if: win
+      then:
+        - m2-patch
+    - if: osx
+      then:
+        - tapi
+    - if: build_platform != target_platform
+      then:
+        - pkg-config
+    - cmake
+    - cython
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+  host:
+    - if: build_platform == target_platform
+      then:
+        - pkg-config
+    - numpy
+    - pip
+    - python
+    - ros-lyrical-ament-cmake-ros
+    - ros-lyrical-ament-lint-auto
+    - ros-lyrical-ament-lint-common
+    - ros-lyrical-rcl-logging-interface
+    - ros-lyrical-rcl-logging-noop
+    - ros-lyrical-rcpputils
+    - ros-lyrical-rcutils
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros2-distro-mutex 0.16.* lyrical_*
+  run:
+    - python
+    - ros-lyrical-rcl-logging-interface
+    - ros-lyrical-rcl-logging-spdlog
+    - ros-lyrical-rcpputils
+    - ros-lyrical-rcutils
+    - ros-lyrical-ros-workspace
+    - ros2-distro-mutex 0.16.* lyrical_*

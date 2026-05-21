@@ -1,0 +1,153 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-gz-sim-vendor
+  version: 0.4.4
+source:
+  git: https://github.com/ros2-gbp/gz_sim_vendor-release.git
+  tag: release/lyrical/gz_sim_vendor/0.4.4-3
+  target_directory: ros-lyrical-gz-sim-vendor/src/work
+
+build:
+  script: ${{ '$RECIPE_DIR/build_ament_cmake.sh' if unix or wasm32 else '%RECIPE_DIR%\\bld_ament_cmake.bat' }}
+  number: 20
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  homepage: https://github.com/gazebosim/gz-sim
+  license: Apache-2.0
+  summary: 'Vendor package for: gz-sim 10.1.1 Gazebo Sim : A Robotic Simulator'
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - if: target_platform!='emscripten-wasm32'
+      then:
+        - ${{ stdlib('c') }}
+    - ninja
+    - python
+    - setuptools
+    - git
+    - git-lfs
+    - if: unix
+      then:
+        - patch
+        - make
+        - coreutils
+    - if: win
+      then:
+        - m2-patch
+    - if: osx
+      then:
+        - tapi
+    - if: build_platform != target_platform
+      then:
+        - pkg-config
+    - cmake
+    - cython
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+    - if: build_platform != target_platform
+      then:
+        - pybind11
+  host:
+    - benchmark
+    - binutils
+    - if: build_platform == target_platform
+      then:
+        - pkg-config
+    - elfutils
+    - freeglut
+    - freeimage
+    - glew
+    - libgl-devel
+    - libgz-sim
+    - libopengl-devel
+    - libprotobuf
+    - libuuid
+    - numpy
+    - pip
+    - protobuf
+    - pybind11
+    - pytest
+    - python
+    - qt6-main
+    - ros-lyrical-ament-cmake-copyright
+    - ros-lyrical-ament-cmake-core
+    - ros-lyrical-ament-cmake-lint-cmake
+    - ros-lyrical-ament-cmake-test
+    - ros-lyrical-ament-cmake-vendor-package
+    - ros-lyrical-ament-cmake-xmllint
+    - ros-lyrical-gz-cmake-vendor
+    - ros-lyrical-gz-common-vendor
+    - ros-lyrical-gz-fuel-tools-vendor
+    - ros-lyrical-gz-gui-vendor
+    - ros-lyrical-gz-math-vendor
+    - ros-lyrical-gz-msgs-vendor
+    - ros-lyrical-gz-physics-vendor
+    - ros-lyrical-gz-plugin-vendor
+    - ros-lyrical-gz-rendering-vendor
+    - ros-lyrical-gz-sensors-vendor
+    - ros-lyrical-gz-tools-vendor
+    - ros-lyrical-gz-transport-vendor
+    - ros-lyrical-gz-utils-vendor
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-sdformat-vendor
+    - ros2-distro-mutex 0.16.* lyrical_*
+    - tinyxml2
+    - xorg-libxi
+    - xorg-libxmu
+  run:
+    - benchmark
+    - binutils
+    - elfutils
+    - freeglut
+    - freeimage
+    - glew
+    - libgl-devel
+    - libgz-sim
+    - libopengl-devel
+    - libprotobuf
+    - libuuid
+    - protobuf
+    - pybind11
+    - python
+    - qt6-main
+    - ros-lyrical-gz-cmake-vendor
+    - ros-lyrical-gz-common-vendor
+    - ros-lyrical-gz-fuel-tools-vendor
+    - ros-lyrical-gz-gui-vendor
+    - ros-lyrical-gz-math-vendor
+    - ros-lyrical-gz-msgs-vendor
+    - ros-lyrical-gz-physics-vendor
+    - ros-lyrical-gz-plugin-vendor
+    - ros-lyrical-gz-rendering-vendor
+    - ros-lyrical-gz-sensors-vendor
+    - ros-lyrical-gz-tools-vendor
+    - ros-lyrical-gz-transport-vendor
+    - ros-lyrical-gz-utils-vendor
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-sdformat-vendor
+    - ros2-distro-mutex 0.16.* lyrical_*
+    - tinyxml2
+    - xorg-libxi
+    - xorg-libxmu
