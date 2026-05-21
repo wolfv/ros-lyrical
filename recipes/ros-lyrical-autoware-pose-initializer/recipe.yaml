@@ -1,0 +1,108 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-autoware-pose-initializer
+  version: 1.7.0
+source:
+  git: https://github.com/ros2-gbp/autoware_core-release.git
+  tag: release/humble/autoware_pose_initializer/1.7.0-1
+  target_directory: ros-lyrical-autoware-pose-initializer/src/work
+
+build:
+  script: ${{ '$RECIPE_DIR/build_ament_cmake.sh' if unix or wasm32 else '%RECIPE_DIR%\\bld_ament_cmake.bat' }}
+  number: 20
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  license: Apache-2.0
+  summary: The autoware_pose_initializer package
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - if: target_platform!='emscripten-wasm32'
+      then:
+        - ${{ stdlib('c') }}
+    - ninja
+    - python
+    - setuptools
+    - git
+    - git-lfs
+    - if: unix
+      then:
+        - patch
+        - make
+        - coreutils
+    - if: win
+      then:
+        - m2-patch
+    - if: osx
+      then:
+        - tapi
+    - if: build_platform != target_platform
+      then:
+        - pkg-config
+    - cmake
+    - cython
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+  host:
+    - if: build_platform == target_platform
+      then:
+        - pkg-config
+    - numpy
+    - pip
+    - python
+    - ros-lyrical-ament-cmake
+    - ros-lyrical-ament-cmake-cppcheck
+    - ros-lyrical-ament-cmake-gmock
+    - ros-lyrical-ament-lint-auto
+    - ros-lyrical-autoware-adapi-v1-msgs
+    - ros-lyrical-autoware-cmake
+    - ros-lyrical-autoware-component-interface-specs
+    - ros-lyrical-autoware-lint-common
+    - ros-lyrical-autoware-map-height-fitter
+    - ros-lyrical-autoware-motion-utils
+    - ros-lyrical-autoware-qos-utils
+    - ros-lyrical-autoware-utils-diagnostics
+    - ros-lyrical-autoware-utils-logging
+    - ros-lyrical-geometry-msgs
+    - ros-lyrical-rclcpp
+    - ros-lyrical-rclcpp-components
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-std-srvs
+    - ros2-distro-mutex 0.16.* lyrical_*
+  run:
+    - python
+    - ros-lyrical-autoware-adapi-v1-msgs
+    - ros-lyrical-autoware-component-interface-specs
+    - ros-lyrical-autoware-map-height-fitter
+    - ros-lyrical-autoware-motion-utils
+    - ros-lyrical-autoware-qos-utils
+    - ros-lyrical-autoware-utils-diagnostics
+    - ros-lyrical-autoware-utils-logging
+    - ros-lyrical-geometry-msgs
+    - ros-lyrical-rclcpp
+    - ros-lyrical-rclcpp-components
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-std-srvs
+    - ros2-distro-mutex 0.16.* lyrical_*

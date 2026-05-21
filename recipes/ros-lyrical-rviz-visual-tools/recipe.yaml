@@ -1,0 +1,141 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+package:
+  name: ros-lyrical-rviz-visual-tools
+  version: 4.1.4
+source:
+  git: https://github.com/ros2-gbp/rviz_visual_tools-release.git
+  tag: release/lyrical/rviz_visual_tools/4.1.4-5
+  target_directory: ros-lyrical-rviz-visual-tools/src/work
+  patches:
+    - patch/ros-lyrical-rviz-visual-tools.patch
+
+build:
+  script: ${{ '$RECIPE_DIR/build_ament_cmake.sh' if unix or wasm32 else '%RECIPE_DIR%\\bld_ament_cmake.bat' }}
+  number: 20
+  post_process:
+    - files:
+        - '*.pc'
+      regex: (?:-L|-I)?"?([^;\s]+/sysroot/)
+      replacement: $$(CONDA_BUILD_SYSROOT_S)
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/sysroot)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+    - files:
+        - '*.cmake'
+      regex: ([^;\s"]+/MacOSX\d*\.?\d*\.sdk)
+      replacement: $$ENV{CONDA_BUILD_SYSROOT}
+about:
+  homepage: https://github.com/PickNikRobotics/rviz_visual_tools
+  repository: https://github.com/PickNikRobotics/rviz_visual_tools/
+  license: BSD-3-Clause
+  summary: Utility functions for displaying and debugging data in Rviz via published markers
+extra:
+  recipe-maintainers:
+    - ros-forge
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - if: target_platform!='emscripten-wasm32'
+      then:
+        - ${{ stdlib('c') }}
+    - ninja
+    - python
+    - setuptools
+    - git
+    - git-lfs
+    - if: unix
+      then:
+        - patch
+        - make
+        - coreutils
+    - if: win
+      then:
+        - m2-patch
+    - if: osx
+      then:
+        - tapi
+    - if: build_platform != target_platform
+      then:
+        - pkg-config
+    - cmake
+    - cython
+    - if: build_platform != target_platform
+      then:
+        - python
+        - cross-python_${{ target_platform }}
+        - numpy
+    - if: build_platform != target_platform
+      then:
+        - qt-main
+  host:
+    - if: build_platform == target_platform
+      then:
+        - pkg-config
+    - eigen
+    - libgl-devel
+    - libopengl-devel
+    - numpy
+    - pip
+    - python
+    - qt-main
+    - ros-lyrical-ament-cmake
+    - ros-lyrical-ament-cmake-gtest
+    - ros-lyrical-ament-lint-auto
+    - ros-lyrical-ament-lint-common
+    - ros-lyrical-eigen-stl-containers
+    - ros-lyrical-eigen3-cmake-module
+    - ros-lyrical-geometry-msgs
+    - ros-lyrical-interactive-markers
+    - ros-lyrical-pluginlib
+    - ros-lyrical-rclcpp
+    - ros-lyrical-rclcpp-components
+    - ros-lyrical-ros-environment
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-rviz-common
+    - ros-lyrical-rviz-default-plugins
+    - ros-lyrical-rviz-ogre-vendor
+    - ros-lyrical-rviz-rendering
+    - ros-lyrical-sensor-msgs
+    - ros-lyrical-shape-msgs
+    - ros-lyrical-std-msgs
+    - ros-lyrical-tf2
+    - ros-lyrical-tf2-eigen
+    - ros-lyrical-tf2-geometry-msgs
+    - ros-lyrical-trajectory-msgs
+    - ros-lyrical-visualization-msgs
+    - ros2-distro-mutex 0.16.* lyrical_*
+  run:
+    - eigen
+    - libgl-devel
+    - libopengl-devel
+    - python
+    - qt-main
+    - ros-lyrical-ament-index-python
+    - ros-lyrical-eigen-stl-containers
+    - ros-lyrical-eigen3-cmake-module
+    - ros-lyrical-geometry-msgs
+    - ros-lyrical-interactive-markers
+    - ros-lyrical-launch
+    - ros-lyrical-launch-ros
+    - ros-lyrical-pluginlib
+    - ros-lyrical-rclcpp
+    - ros-lyrical-rclcpp-components
+    - ros-lyrical-ros-workspace
+    - ros-lyrical-rviz-common
+    - ros-lyrical-rviz-default-plugins
+    - ros-lyrical-rviz-ogre-vendor
+    - ros-lyrical-rviz-rendering
+    - ros-lyrical-rviz2
+    - ros-lyrical-sensor-msgs
+    - ros-lyrical-shape-msgs
+    - ros-lyrical-std-msgs
+    - ros-lyrical-tf2
+    - ros-lyrical-tf2-eigen
+    - ros-lyrical-tf2-geometry-msgs
+    - ros-lyrical-trajectory-msgs
+    - ros-lyrical-visualization-msgs
+    - ros2-distro-mutex 0.16.* lyrical_*
