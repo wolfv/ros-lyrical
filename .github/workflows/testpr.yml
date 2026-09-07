@@ -127,14 +127,19 @@ jobs:
         # as an artifact. Recover the newest such checkpoint on the next run.
         prefix="cache-${{ matrix.platform }}-"
         artifact_id=""
+        gh_cmd=(gh)
+        if ! command -v gh >/dev/null 2>&1; then
+          # cleanup-path intentionally removes this directory on Windows.
+          gh_cmd=("/c/Program Files/GitHub CLI/gh.exe")
+        fi
         # Query artifacts per workflow run rather than the repository-wide
         # first page, which can omit this branch's checkpoint in a busy repo.
-        for run_id in $(gh api -X GET \
+        for run_id in $("${gh_cmd[@]}" api -X GET \
           "repos/${GITHUB_REPOSITORY}/actions/workflows/testpr.yml/runs" \
           -f branch="${GITHUB_HEAD_REF}" -f event="pull_request" -f per_page=20 \
           --jq '.workflow_runs[].id'); do
           [[ "${run_id}" == "${GITHUB_RUN_ID}" ]] && continue
-          artifact_id=$(gh api -X GET \
+          artifact_id=$("${gh_cmd[@]}" api -X GET \
             "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" \
             -f name="${prefix}${run_id}" \
             --jq '.artifacts | map(select(.expired == false)) | first | .id // empty')
@@ -142,7 +147,7 @@ jobs:
         done
         if [[ -n "${artifact_id}" ]]; then
           echo "Restoring partial-build artifact ${artifact_id}"
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > partial-cache.zip
+          "${gh_cmd[@]}" api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > partial-cache.zip
           mkdir -p ${{ matrix.folder_cache }}
           pixi run python -m zipfile -e partial-cache.zip ${{ matrix.folder_cache }}
           rm partial-cache.zip
@@ -199,6 +204,16 @@ jobs:
           # at startup. Publish this pass's new artifacts before the next pass.
           pixi run rattler-index fs ${{ matrix.folder_cache }}/.. --force
         done
+
+        if [[ "${{ matrix.platform }}" == "win-64" ]]; then
+          # These Python packages were invalidated by the Windows-specific
+          # rosidl generator patch change. Rebuild them in dependency order so
+          # the broad strict invocation sees each one in local repodata.
+          for package in ros-lyrical-rclpy ros-lyrical-launch-testing-ros; do
+            pixi run rattler-build build --recipe "recipes/${package}/recipe.yaml" --target-platform ${{ matrix.platform }} -m ./conda_build_config.yaml -c https://prefix.dev/conda-forge -c https://prefix.dev/robostack-lyrical
+            pixi run rattler-index fs ${{ matrix.folder_cache }}/.. --force
+          done
+        fi
 
         rm -rf ${{ matrix.folder_cache }}/../src_cache/git
         pixi run rattler-build build --recipe-dir recipes --target-platform ${{ matrix.platform }} -m ./conda_build_config.yaml -c https://prefix.dev/conda-forge -c https://prefix.dev/robostack-lyrical --skip-existing
